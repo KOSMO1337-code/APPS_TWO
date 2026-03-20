@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Базовый Кликер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .header { margin-bottom: 30px; }
+        .balance { font-size: 32px; font-weight: bold; color: #ffeb3b; text-shadow: 1px 1px 2px #000; }
+        .click-btn {
+            width: 200px;
+            height: 200px;
+            background-color: #ffeb3b;
+            border: 5px solid #000;
+            border-radius: 50%;
+            font-size: 80px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #000;
+            transition: all 0.1s;
+        }
+        .click-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #000;
+        }
+    </style>
+</head>
+<body>
+
+    <h2 id="user-name">Загрузка...</h2>
+    
+    <div class="header">
+        <div>Баланс 💰</div>
+        <div class="balance" id="balance-display">0</div>
+    </div>
+
+    <button class="click-btn" onclick="clickFarm()">⛏️</button>
+
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const userName = tg.initDataUnsafe?.user?.first_name || 'Гость';
+        document.getElementById('user-name').innerText = `Привет, ${userName}!`;
+
+        // Логика игры
+        let balance = parseFloat(localStorage.getItem('base_balance')) || 0;
+        updateUI();
+
+        function clickFarm() {
+            balance += 1;
+            localStorage.setItem('base_balance', balance);
+            updateUI();
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function updateUI() {
+            document.getElementById('balance-display').innerText = Math.floor(balance);
+        }
+    </script>
+</body>
+</html>

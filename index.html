@@ -3,644 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mining Farm — видеокарты майнят крипту</title>
+    <title>Алхимия Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --bg: #1e1e2f;
+            --text: #ffffff;
+            --primary: #ffeb3b;
+            --card-bg: #2a2a40;
+            --card-active: #4caf50;
         }
-
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
-            background-color: #000000;
-            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 15px;
+            user-select: none;
+            overflow-x: hidden;
         }
+        * { box-sizing: border-box; }
 
-        /* главный контейнер — вся игра */
-        .app-container {
-            width: 100%;
-            max-width: 550px;
-            margin: 0 auto;
-            background-color: #0a0a0a;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            border-radius: 0;
-            overflow: hidden;
+        /* Анимация тряски при ошибке */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
         }
+        .shake { animation: shake 0.4s ease-in-out; }
 
-        /* шапка */
-        .tg-header {
-            background-color: #000000;
-            padding: 18px 20px 12px;
-            border-bottom: 2px solid #ffeb3b;
-        }
-        .greeting {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #ffeb3b;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .greeting span:first-child {
-            background: #1f1f1f;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            color: #ffeb3b;
-        }
-
-        /* баланс */
-        .balance-card {
-            background: #111111;
-            margin: 16px 20px;
-            border-radius: 32px;
-            padding: 18px 20px;
+        /* Шапка с прогрессом */
+        .header {
             text-align: center;
-            border: 1px solid #2a2a2a;
-            box-shadow: 0 6px 0 #ffeb3b20;
-        }
-        .balance-label {
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #bbb;
-            margin-bottom: 8px;
-        }
-        .balance-value {
-            font-size: 3.2rem;
-            font-weight: 800;
-            color: #ffeb3b;
-            text-shadow: 0 0 6px #ffeb3b60;
-            line-height: 1;
-            word-break: break-word;
-        }
-        .income-info {
-            margin-top: 8px;
-            font-size: 0.8rem;
-            background: #1e1e1e;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 40px;
-            color: #ddd;
-        }
-
-        /* вкладки */
-        .tabs {
-            display: flex;
-            margin: 8px 20px 0px;
-            background: #111;
-            border-radius: 60px;
-            padding: 4px;
-            gap: 8px;
-        }
-        .tab-btn {
-            flex: 1;
-            background: transparent;
-            border: none;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 12px 0;
-            border-radius: 50px;
-            color: #aaa;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-        .tab-btn.active {
-            background: #ffeb3b;
-            color: #000000;
-            box-shadow: 0 2px 8px rgba(255,235,59,0.3);
-        }
-
-        /* панели контента */
-        .tab-pane {
-            display: none;
-            padding: 20px 20px 30px;
-            flex: 1;
-            animation: fade 0.2s ease;
-        }
-        .tab-pane.active-pane {
-            display: block;
-        }
-        @keyframes fade {
-            from { opacity: 0; transform: translateY(6px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-
-        /* ферма: стиль кликера */
-        .farm-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 10px;
-        }
-        .click-btn {
-            width: 210px;
-            height: 210px;
-            background: radial-gradient(circle at 30% 25%, #ffeb3b, #e6c300);
-            border: 3px solid #ffffffcc;
-            border-radius: 50%;
-            font-size: 5rem;
-            cursor: pointer;
-            box-shadow: 0 12px 0 #7a5c00;
-            transition: all 0.07s linear;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin-bottom: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .click-btn:active {
-            transform: translateY(8px);
-            box-shadow: 0 4px 0 #7a5c00;
-        }
-        .farm-stats {
-            background: #141414;
-            border-radius: 28px;
-            padding: 16px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid #2c2c2c;
-        }
-        .hashrate {
-            font-weight: bold;
-            font-size: 1.25rem;
-            color: #ffeb3b;
-        }
+        .progress-text { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: var(--primary); }
+        .win-message { color: #4caf50; font-size: 16px; font-weight: bold; display: none; margin-top: 10px; }
 
-        /* магазин — сетка 2x4 */
-        .shop-grid {
+        /* Сетка элементов */
+        .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-top: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 12px;
+            padding-bottom: 40px;
         }
-        .card {
-            background: #141414;
-            border-radius: 24px;
-            padding: 14px 10px;
+        .element-card {
+            background-color: var(--card-bg);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 15px 5px;
             text-align: center;
-            transition: 0.1s;
-            border: 1px solid #2c2c2c;
-        }
-        .card-name {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 6px;
-            color: #ffeb3b;
-        }
-        .card-income {
-            font-size: 0.8rem;
-            color: #bbbbbb;
-            margin: 4px 0;
-        }
-        .card-price {
-            font-weight: bold;
-            font-size: 1rem;
-            margin: 8px 0 6px;
-            background: #000000aa;
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-        }
-        .card-owned {
-            font-size: 0.7rem;
-            color: #aaa;
-            margin-top: 4px;
-        }
-        .buy-btn {
-            background: #ffeb3b;
-            border: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            padding: 8px 0;
-            width: 100%;
-            border-radius: 60px;
-            margin-top: 8px;
             cursor: pointer;
-            transition: 0.1s;
-            color: #000;
-            font-family: inherit;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        .buy-btn:active {
-            transform: scale(0.96);
+        .element-card.selected {
+            border-color: var(--primary);
+            background-color: rgba(255, 235, 59, 0.1);
+            transform: scale(1.05);
         }
-        .buy-btn.disabled {
-            background: #4a4a4a;
-            color: #aaaaaa;
-            cursor: not-allowed;
-            opacity: 0.7;
-            transform: none;
+        .element-card.new {
+            animation: pulse-green 1s ease-out;
         }
-        .buy-btn.disabled:active {
-            transform: none;
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
         }
+        .emoji { font-size: 32px; margin-bottom: 5px; }
+        .name { font-size: 12px; font-weight: bold; }
 
-        /* сообщение об ошибке (легкое) */
-        .toast-msg {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ffeb3b;
-            color: #000;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            z-index: 200;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        footer {
-            text-align: center;
-            font-size: 0.65rem;
-            color: #444;
-            padding: 16px 10px 20px;
-        }
-
-        @media (max-width: 450px) {
-            .shop-grid { gap: 12px; }
-            .click-btn { width: 170px; height: 170px; font-size: 4rem; }
-            .balance-value { font-size: 2.5rem; }
+        .reset-btn {
+            display: block; width: 100%; padding: 12px; margin-top: 20px;
+            background: #ff5252; color: white; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 16px; cursor: pointer;
         }
     </style>
 </head>
-<body>
-<div class="app-container">
-    <div class="tg-header">
-        <div class="greeting">
-            <span>⚡ MINING FARM</span>
-            <span id="user-name">Загрузка...</span>
+<body id="app-body">
+
+    <div class="header">
+        <div id="player-name" style="font-size: 14px; color: #aaa; margin-bottom: 5px;">Алхимик</div>
+        <div class="progress-text" id="progress-display">Собрано: 4 / 26</div>
+        <div class="win-message" id="win-message">🎉 Вы открыли все элементы! Вы истинный Магистр Алхимии! 🎉</div>
+    </div>
+
+    <div class="grid" id="elements-grid">
         </div>
-    </div>
 
-    <div class="balance-card">
-        <div class="balance-label">💰 ТВОЙ КАПИТАЛ</div>
-        <div class="balance-value" id="balance-display">0</div>
-        <div class="income-info" id="income-rate">⚡ Доход в сек: 0</div>
-    </div>
+    <button class="reset-btn" onclick="resetGame()">Начать заново</button>
 
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="farm">🎮 Ферма</button>
-        <button class="tab-btn" data-tab="shop">🛒 Магазин</button>
-    </div>
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        document.getElementById('player-name').innerText = `Алхимик: ${tg.initDataUnsafe?.user?.first_name || 'Гость'}`;
 
-    <div id="farm-pane" class="tab-pane active-pane">
-        <div class="farm-area">
-            <button class="click-btn" id="clickMineBtn">⛏️</button>
-            <div class="farm-stats">
-                <div>💎 Ручной клик: +1 монета</div>
-                <div class="hashrate" id="total-hashrate">🎛️ Хешрейт фермы: 0</div>
-                <div style="font-size:0.7rem; margin-top:8px;">✔️ Пассивный доход каждую секунду</div>
-            </div>
-        </div>
-    </div>
+        // === БАЗА ДАННЫХ ЭЛЕМЕНТОВ ===
+        const ELEMENTS = {
+            // База (4)
+            'fire': { name: 'Огонь', emoji: '🔥' },
+            'water': { name: 'Вода', emoji: '💧' },
+            'earth': { name: 'Земля', emoji: '🌍' },
+            'air': { name: 'Воздух', emoji: '💨' },
+            // Уровень 1 (6)
+            'steam': { name: 'Пар', emoji: '☁️' },
+            'lava': { name: 'Лава', emoji: '🌋' },
+            'mud': { name: 'Грязь', emoji: '💩' },
+            'dust': { name: 'Пыль', emoji: '🌪️' },
+            'rain': { name: 'Дождь', emoji: '🌧️' },
+            'energy': { name: 'Энергия', emoji: '⚡' },
+            // Уровень 2 (8)
+            'life': { name: 'Жизнь', emoji: '🌱' },
+            'stone': { name: 'Камень', emoji: '🪨' },
+            'plant': { name: 'Растение', emoji: '🌿' },
+            'ash': { name: 'Пепел', emoji: '🌑' },
+            'lightning': { name: 'Молния', emoji: '🌩️' },
+            'sea': { name: 'Море', emoji: '🌊' },
+            'mountain': { name: 'Гора', emoji: '⛰️' },
+            'cloud': { name: 'Облако', emoji: '⛅' },
+            // Уровень 3 (8)
+            'animal': { name: 'Животное', emoji: '🐾' },
+            'bird': { name: 'Птица', emoji: '🕊️' },
+            'metal': { name: 'Металл', emoji: '⚙️' },
+            'robot': { name: 'Робот', emoji: '🤖' },
+            'storm': { name: 'Шторм', emoji: '⛈️' },
+            'forest': { name: 'Лес', emoji: '🌲' },
+            'human': { name: 'Человек', emoji: '🧍' },
+            'tool': { name: 'Инструмент', emoji: '🛠️' }
+        };
 
-    <div id="shop-pane" class="tab-pane">
-        <div class="shop-grid" id="shop-grid-container">
-            <!-- динамически карточки видеокарт -->
-        </div>
-        <div style="font-size:0.7rem; text-align:center; margin-top:18px; color:#aaa;">
-            📈 Цена растёт с каждой купленной картой (x1.5)
-        </div>
-    </div>
-    <footer>⚙️ Авто-майнинг активен · данные в локальном хранилище</footer>
-</div>
-<div id="toast-message" class="toast-msg"></div>
+        const TOTAL_ELEMENTS = Object.keys(ELEMENTS).length;
 
-<script>
-    (function(){
-        // --------------------------------------------------------------
-        // 1. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEB APP
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.expand();
-            if (tg.HapticFeedback) {
-                window.hapticAvailable = true;
-            } else {
-                window.hapticAvailable = false;
-            }
-            const user = tg.initDataUnsafe?.user;
-            const firstName = user?.first_name || 'Майнер';
-            document.getElementById('user-name').innerText = `${firstName}`;
-        } else {
-            document.getElementById('user-name').innerText = 'Гость';
-            window.hapticAvailable = false;
-        }
+        // === РЕЦЕПТЫ ===
+        // ВАЖНО: Ключи всегда должны быть отсортированы по алфавиту! (air перед earth и т.д.)
+        const RECIPES = {
+            // Уровень 1
+            'fire+water': 'steam',
+            'earth+fire': 'lava',
+            'earth+water': 'mud',
+            'air+earth': 'dust',
+            'air+water': 'rain',
+            'air+fire': 'energy',
+            // Уровень 2
+            'energy+mud': 'life',
+            'lava+water': 'stone',
+            'earth+rain': 'plant',
+            'dust+fire': 'ash',
+            'air+energy': 'lightning',
+            'water+water': 'sea',
+            'earth+earth': 'mountain',
+            'air+steam': 'cloud',
+            // Уровень 3
+            'earth+life': 'animal',
+            'air+life': 'bird',
+            'fire+stone': 'metal',
+            'energy+metal': 'robot',
+            'cloud+lightning': 'storm',
+            'plant+plant': 'forest',
+            'animal+fire': 'human',
+            'human+metal': 'tool'
+        };
 
-        // --------------------------------------------------------------
-        // 2. КОНСТАНТЫ ВИДЕОКАРТ (8 карт)
-        const MINING_CARDS = [
-            { id: 0, name: "GTX 1050 Ti", basePrice: 150, income: 1 },
-            { id: 1, name: "GTX 1660 Super", basePrice: 280, income: 2 },
-            { id: 2, name: "RTX 2060", basePrice: 420, income: 3 },
-            { id: 3, name: "RTX 3060 Ti", basePrice: 650, income: 5 },
-            { id: 4, name: "RTX 3070", basePrice: 880, income: 7 },
-            { id: 5, name: "RTX 3080", basePrice: 1250, income: 10 },
-            { id: 6, name: "RTX 4080", basePrice: 1850, income: 14 },
-            { id: 7, name: "RTX 4090", basePrice: 2600, income: 20 }
-        ];
+        // === СОСТОЯНИЕ ИГРЫ ===
+        let unlocked = JSON.parse(localStorage.getItem('alchemy_unlocked')) || ['fire', 'water', 'earth', 'air'];
+        let selectedId = null; // ID первого выбранного элемента
 
-        // состояния игрока
-        let balance = 0;
-        // ownedCards: количество купленных карт по id (массив длиной 8)
-        let ownedCards = new Array(8).fill(0);
-        
-        // вспомогательные функции для расчета текущей цены карты
-        function getCurrentPrice(cardId) {
-            const card = MINING_CARDS[cardId];
-            const ownedCount = ownedCards[cardId];
-            // формула: basePrice * (1.5 ^ ownedCount)
-            return Math.floor(card.basePrice * Math.pow(1.5, ownedCount));
-        }
-        
-        // суммарный доход в секунду
-        function getTotalIncomePerSecond() {
-            let total = 0;
-            for (let i = 0; i < MINING_CARDS.length; i++) {
-                total += ownedCards[i] * MINING_CARDS[i].income;
-            }
-            return total;
-        }
-        
-        // обновление UI: баланс, доход, кнопки магазина, общая статистика фермы
-        function updateUI() {
-            // баланс
-            const balanceEl = document.getElementById('balance-display');
-            if (balanceEl) balanceEl.innerText = Math.floor(balance);
-            // доход в секунду
-            const incomePerSec = getTotalIncomePerSecond();
-            const incomeRateSpan = document.getElementById('income-rate');
-            if (incomeRateSpan) incomeRateSpan.innerHTML = `⚡ Доход в сек: +${incomePerSec}`;
-            const hashrateSpan = document.getElementById('total-hashrate');
-            if (hashrateSpan) hashrateSpan.innerText = `🎛️ Хешрейт фермы: ${incomePerSec} монет/сек`;
-            
-            // обновляем магазин: цены и активность кнопок
-            renderShop();
-        }
-        
-        // рендер сетки магазина (полная перерисовка)
-        function renderShop() {
-            const container = document.getElementById('shop-grid-container');
-            if (!container) return;
-            let html = '';
-            for (let i = 0; i < MINING_CARDS.length; i++) {
-                const card = MINING_CARDS[i];
-                const currentPrice = getCurrentPrice(i);
-                const ownedCount = ownedCards[i];
-                const canAfford = balance >= currentPrice;
-                // disabled класс если недостаточно денег
-                const btnDisabledClass = !canAfford ? 'disabled' : '';
-                const btnDisabledAttr = !canAfford ? 'disabled' : '';
-                html += `
-                    <div class="card" data-card-id="${i}">
-                        <div class="card-name">${card.name}</div>
-                        <div class="card-income">💰 +${card.income}/сек</div>
-                        <div class="card-price">💵 ${currentPrice} монет</div>
-                        <div class="card-owned">📦 Владелец: ${ownedCount} шт.</div>
-                        <button class="buy-btn ${btnDisabledClass}" data-id="${i}" ${btnDisabledAttr}>
-                            🛒 Купить
-                        </button>
-                    </div>
+        // === ОСНОВНАЯ ЛОГИКА ===
+        function render() {
+            const grid = document.getElementById('elements-grid');
+            grid.innerHTML = ''; // Очищаем сетку
+
+            unlocked.forEach(id => {
+                const el = ELEMENTS[id];
+                const card = document.createElement('div');
+                card.className = `element-card ${selectedId === id ? 'selected' : ''}`;
+                card.onclick = () => handleSelect(id);
+                
+                card.innerHTML = `
+                    <div class="emoji">${el.emoji}</div>
+                    <div class="name">${el.name}</div>
                 `;
-            }
-            container.innerHTML = html;
-            
-            // навешиваем обработчики на кнопки "купить"
-            const allBuyBtns = document.querySelectorAll('.buy-btn');
-            allBuyBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (btn.disabled) return;
-                    const cardIdAttr = btn.getAttribute('data-id');
-                    if (cardIdAttr !== null) {
-                        const id = parseInt(cardIdAttr, 10);
-                        purchaseCard(id);
-                    }
-                });
+                grid.appendChild(card);
             });
+
+            // Обновляем прогресс
+            document.getElementById('progress-display').innerText = `Собрано: ${unlocked.length} / ${TOTAL_ELEMENTS}`;
+            
+            // Проверка победы
+            if (unlocked.length >= TOTAL_ELEMENTS) {
+                document.getElementById('win-message').style.display = 'block';
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            }
         }
-        
-        // покупка видеокарты
-        function purchaseCard(cardId) {
-            const currentPrice = getCurrentPrice(cardId);
-            if (balance < currentPrice) {
-                showToast("❌ Не хватает монет!");
-                if (window.hapticAvailable && tg?.HapticFeedback) {
-                    tg.HapticFeedback.notificationOccurred('error');
-                }
+
+        function handleSelect(id) {
+            // Если ничего не выбрано — выбираем первый элемент
+            if (!selectedId) {
+                selectedId = id;
+                if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+                render();
                 return;
             }
-            // списываем баланс
-            balance -= currentPrice;
-            // увеличиваем количество карт
-            ownedCards[cardId] += 1;
-            // сохраняем и обновляем интерфейс
-            saveGameToLocalStorage();
-            updateUI();
-            // тактильный отклик при успешной покупке
-            if (window.hapticAvailable && tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
+
+            // Если кликнули на тот же самый — отменяем выбор
+            if (selectedId === id) {
+                selectedId = null;
+                render();
+                return;
             }
-            showToast(`✅ Куплена ${MINING_CARDS[cardId].name}! +${MINING_CARDS[cardId].income}/сек`);
+
+            // Попытка скрестить два элемента
+            combine(selectedId, id);
         }
-        
-        // клик по ферме (ручной)
-        function handleClickFarm() {
-            balance += 1;
-            saveGameToLocalStorage();
-            updateUI();
-            if (window.hapticAvailable && tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-            // небольшая визуальная анимация (мигание баланса - необязательно)
-        }
-        
-        // пассивный доход каждую секунду
-        let miningInterval = null;
-        function startMiningInterval() {
-            if (miningInterval) clearInterval(miningInterval);
-            miningInterval = setInterval(() => {
-                const income = getTotalIncomePerSecond();
-                if (income > 0) {
-                    balance += income;
-                    // сохраняем баланс каждую секунду в localStorage
-                    saveGameToLocalStorage();
-                    updateUI();
+
+        function combine(id1, id2) {
+            // 1. Сортируем ID по алфавиту, чтобы 'fire+water' было равно 'water+fire'
+            const recipeKey = [id1, id2].sort().join('+');
+            const resultId = RECIPES[recipeKey];
+
+            if (resultId) {
+                // УСПЕХ: Рецепт существует
+                if (!unlocked.includes(resultId)) {
+                    // Это новый элемент!
+                    unlocked.push(resultId);
+                    localStorage.setItem('alchemy_unlocked', JSON.stringify(unlocked));
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 } else {
-                    // если дохода нет, просто обновляем UI на случай изменения
-                    updateUI();
-                }
-            }, 1000);
-        }
-        
-        // ----------  localStorage сохранение/загрузка  ----------
-        function saveGameToLocalStorage() {
-            const gameData = {
-                balance: balance,
-                ownedCards: ownedCards,
-                version: "1.0"
-            };
-            localStorage.setItem('mining_farm_data', JSON.stringify(gameData));
-        }
-        
-        function loadGameFromLocalStorage() {
-            const savedRaw = localStorage.getItem('mining_farm_data');
-            if (savedRaw) {
-                try {
-                    const saved = JSON.parse(savedRaw);
-                    if (typeof saved.balance === 'number') balance = saved.balance;
-                    if (Array.isArray(saved.ownedCards) && saved.ownedCards.length === MINING_CARDS.length) {
-                        ownedCards = saved.ownedCards.map(v => typeof v === 'number' ? v : 0);
-                    } else {
-                        // несовместимая структура — сброс
-                        ownedCards = new Array(8).fill(0);
-                        balance = 0;
-                    }
-                } catch(e) {
-                    console.warn("ошибка парсинга, старт с нуля");
-                    resetProgress();
+                    // Элемент уже открыт (просто легкая вибрация)
+                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
                 }
             } else {
-                resetProgress();
+                // ОШИБКА: Рецепта нет
+                triggerShake();
             }
-            // дополнительная чистка: если баланс отрицательный или не число
-            if (isNaN(balance) || balance < 0) balance = 0;
-            for(let i=0;i<ownedCards.length;i++) {
-                if(isNaN(ownedCards[i])) ownedCards[i] = 0;
-            }
-            updateUI();
+
+            // В любом случае сбрасываем выбор
+            selectedId = null;
+            render();
         }
-        
-        function resetProgress() {
-            balance = 0;
-            ownedCards = new Array(8).fill(0);
-            saveGameToLocalStorage();
+
+        function triggerShake() {
+            const body = document.getElementById('app-body');
+            body.classList.remove('shake');
+            void body.offsetWidth; // Магия браузера для перезапуска анимации
+            body.classList.add('shake');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
         }
-        
-        // системный тост (небольшое уведомление)
-        let toastTimeout = null;
-        function showToast(msg) {
-            const toastDiv = document.getElementById('toast-message');
-            if (!toastDiv) return;
-            if (toastTimeout) clearTimeout(toastTimeout);
-            toastDiv.innerText = msg;
-            toastDiv.style.opacity = '1';
-            toastTimeout = setTimeout(() => {
-                toastDiv.style.opacity = '0';
-            }, 1500);
-        }
-        
-        // ----------  ВКЛАДКИ (табы) ----------
-        function initTabs() {
-            const farmPane = document.getElementById('farm-pane');
-            const shopPane = document.getElementById('shop-pane');
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            
-            function setActiveTab(tabId) {
-                // скрываем оба
-                if (farmPane) farmPane.classList.remove('active-pane');
-                if (shopPane) shopPane.classList.remove('active-pane');
-                if (tabId === 'farm') {
-                    farmPane.classList.add('active-pane');
-                } else if (tabId === 'shop') {
-                    shopPane.classList.add('active-pane');
-                    // при открытии магазина обновляем рендер (актуальные цены)
-                    renderShop();
-                }
-                // обновляем активный стиль кнопок
-                tabBtns.forEach(btn => {
-                    const tabValue = btn.getAttribute('data-tab');
-                    if (tabValue === tabId) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-            
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tab = btn.getAttribute('data-tab');
-                    if (tab === 'farm') setActiveTab('farm');
-                    else if (tab === 'shop') setActiveTab('shop');
-                    if (window.hapticAvailable && tg?.HapticFeedback) {
-                        tg.HapticFeedback.impactOccurred('light');
-                    }
-                });
-            });
-            // по умолчанию ферма
-            setActiveTab('farm');
-        }
-        
-        // принудительная перерисовка магазина при любом изменении баланса / кол-ва карт (вызывается в updateUI)
-        // но updateUI уже вызывает renderShop()
-        // дополнительно следим за переключением на вкладку магазина через обновление
-        
-        // Функция для полного обновления (гарантирует консистентность)
-        function refreshAfterLoad() {
-            updateUI(); // вызывает renderShop, обновляет доход и баланс
-        }
-        
-        // ----------  Ручной клик + обработчик кнопки ----------
-        function bindFarmClick() {
-            const farmBtn = document.getElementById('clickMineBtn');
-            if (farmBtn) {
-                // удаляем старый обработчик, если есть, во избежание дублей
-                const newBtn = farmBtn.cloneNode(true);
-                farmBtn.parentNode.replaceChild(newBtn, farmBtn);
-                newBtn.addEventListener('click', (e) => {
-                    handleClickFarm();
-                });
+
+        function resetGame() {
+            if (confirm('Точно хочешь стереть все открытые элементы?')) {
+                unlocked = ['fire', 'water', 'earth', 'air'];
+                selectedId = null;
+                localStorage.setItem('alchemy_unlocked', JSON.stringify(unlocked));
+                document.getElementById('win-message').style.display = 'none';
+                render();
             }
         }
-        
-        // принудительно обновляем цены при любом изменении + рендер магазина
-        // доп. слежение за закрытием вкладок: если рендер магазина часто, норм.
-        
-        // ----------  АВТОСОХРАНЕНИЕ ПЕРЕД ВЫХОДОМ (страница/перезагрузка) ----------
-        window.addEventListener('beforeunload', () => {
-            saveGameToLocalStorage();
-        });
-        
-        // ----------  ИНИЦИАЛИЗАЦИЯ ВСЕГО ----------
-        function init() {
-            loadGameFromLocalStorage();   // загрузит balance и ownedCards, вызывает updateUI
-            bindFarmClick();
-            startMiningInterval();
-            initTabs();
-            // дополнительно обновляем магазин после загрузки (гарантия)
-            renderShop();
-            // проверка: при старте если есть доход, он начнет капать с первой секунды.
-            // убедимся, что баланс отображается корректно.
-            refreshAfterLoad();
-            // легкая анимация для приветствия
-            console.log("Mining farm ready");
-        }
-        
-        // запускаем всё после загрузки DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-</script>
+
+        // Запуск
+        render();
+    </script>
 </body>
 </html>

@@ -1,714 +1,707 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dash Runner — Geometry Dash Style</title>
+    <title>Geometry Dash — Double Jump</title>
     <style>
         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
         }
-
         body {
-            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
-            min-height: 100vh;
+            background: #0a0f1e;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', 'Poppins', system-ui, 'Courier New', monospace;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Courier New', monospace;
+            touch-action: manipulation;
         }
-
-        .game-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 48px;
-            padding: 20px 20px 24px;
-            backdrop-filter: blur(2px);
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #0f1725 0%, #020617 100%);
         }
-
         canvas {
             display: block;
-            margin: 0 auto;
-            border-radius: 24px;
-            box-shadow: 0 12px 28px black;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 85%;
+            border-radius: 20px;
+            box-shadow: 0 0 0 3px #0ff, 0 0 0 8px #1e293b, 0 20px 40px rgba(0,0,0,0.5);
             cursor: pointer;
-            background: #141a2c;
         }
-
         .info-panel {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 18px;
-            margin-bottom: 18px;
-            background: #0f1422cc;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 10px 24px;
+            background: #0a1020cc;
             backdrop-filter: blur(12px);
-            padding: 12px 20px;
             border-radius: 60px;
-            border: 1px solid #2e3a5e;
-        }
-
-        .stats {
-            display: flex;
-            gap: 28px;
+            color: #0ff;
             font-weight: bold;
+            width: 90%;
+            max-width: 850px;
+            border: 1px solid cyan;
         }
-
-        .stat {
-            background: #010314;
-            padding: 6px 18px;
-            border-radius: 32px;
-            color: #ffd966;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-            font-family: monospace;
-            box-shadow: inset 0 1px 3px #00000055, 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .stat span {
-            color: #6c8eff;
-            font-weight: 800;
-            margin-right: 8px;
-        }
-
-        .telegram-user {
-            background: #1e2a3a;
-            padding: 6px 16px;
+        .score-box, .coins-box, .double-box {
+            font-size: 26px;
+            background: #010a1a;
+            padding: 4px 20px;
             border-radius: 40px;
-            font-size: 0.85rem;
-            color: #b9e6ff;
-            font-weight: 500;
-        }
-
-        .shop-section {
-            background: #0b1020e6;
-            border-radius: 32px;
-            padding: 12px 18px;
-            margin-top: 8px;
-            backdrop-filter: blur(4px);
-            border: 1px solid #2c3f5f;
-        }
-
-        .shop-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            color: #95adff;
-            letter-spacing: 2px;
-            margin-bottom: 12px;
-        }
-
-        .cards-row {
+            border: 1px solid cyan;
             display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
         }
-
-        .card {
-            background: #121a2c;
-            flex: 1;
-            min-width: 100px;
-            border-radius: 28px;
-            padding: 8px 12px;
-            text-align: center;
-            transition: all 0.1s ease;
-            border: 1px solid #2e4870;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        .double-box {
+            font-size: 22px;
+            background: #2a1a2a;
+            border-color: #ffaa44;
         }
-
-        .card h4 {
-            margin: 6px 0 4px;
-            font-size: 1rem;
-            color: #f5c542;
-        }
-
-        .card p {
-            margin: 4px 0;
-            font-size: 0.8rem;
-            color: #b9d0ff;
-        }
-
-        .card button {
-            background: #433d6b;
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 6px 14px;
-            border-radius: 60px;
-            margin-top: 6px;
-            cursor: pointer;
-            width: 100%;
-            font-family: inherit;
-            transition: 0.05s linear;
-            box-shadow: 0 2px 4px black;
-        }
-
-        .card button:active {
-            transform: scale(0.96);
-            background: #2c2652;
-        }
-
-        .card.owned {
-            opacity: 0.7;
-            background: #19233e;
-            border-color: #7f9f6e;
-        }
-
-        .card.owned button {
-            background: #3a5a3a;
-            cursor: default;
-            opacity: 0.7;
-        }
-
         .restart-btn {
-            background: #fa4e3c;
+            background: #1f2a3e;
             border: none;
-            padding: 8px 20px;
-            border-radius: 50px;
+            color: #0ff;
             font-weight: bold;
             font-family: monospace;
-            font-size: 1rem;
-            margin-top: 12px;
-            width: 100%;
-            color: white;
-            letter-spacing: 1px;
+            font-size: 20px;
+            padding: 6px 28px;
+            border-radius: 40px;
             cursor: pointer;
-            transition: 0.08s linear;
-            box-shadow: 0 5px 0 #7a2a1e;
+            transition: 0.07s linear;
+            box-shadow: 0 4px 0 #0f172a;
         }
-
         .restart-btn:active {
             transform: translateY(2px);
-            box-shadow: 0 2px 0 #7a2a1e;
+            box-shadow: 0 1px 0 #0f172a;
         }
-
-        @media (max-width: 680px) {
-            .stat { font-size: 0.9rem; padding: 4px 12px; }
-            .card h4 { font-size: 0.85rem; }
-            .card button { font-size: 0.7rem; }
+        .status {
+            font-size: 20px;
+            background: #000000aa;
+            padding: 4px 20px;
+            border-radius: 30px;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 700px) {
+            .score-box, .coins-box, .double-box { font-size: 16px; padding: 2px 12px; }
+            .status { font-size: 14px; }
+            .restart-btn { font-size: 16px; padding: 4px 18px; }
         }
     </style>
 </head>
 <body>
-<div>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="900" height="400" style="width:100%; height:auto; max-width:900px; aspect-ratio:900/400"></canvas>
-
-        <div class="info-panel">
-            <div class="stats">
-                <div class="stat"><span>⭐ SCORE</span> <span id="scoreValue">0</span></div>
-                <div class="stat"><span>💰 BALANCE</span> <span id="balanceValue">0</span></div>
-            </div>
-            <div class="telegram-user" id="tgUserArea">⚡ GUEST MODE</div>
-        </div>
-
-        <div class="shop-section">
-            <div class="shop-title">🃏 POWER CARDS (Permanent upgrades)</div>
-            <div class="cards-row" id="cardsContainer">
-                <!-- cards injected via js -->
-            </div>
-        </div>
-        <button class="restart-btn" id="restartButton">🔄 RESTART RUN</button>
+<div class="game-wrapper">
+    <canvas id="gameCanvas" width="1800" height="900" style="width:100%; height:auto; max-width:1200px; aspect-ratio:1200/600"></canvas>
+    <div class="info-panel">
+        <div class="score-box">🏆 <span id="scoreValue">0</span></div>
+        <div class="coins-box">🪙 <span id="coinsValue">0</span></div>
+        <div class="double-box">✨ <span id="doubleValue">1</span></div>
+        <div class="status" id="gameStatusText">🏃‍♂️ RUNNING</div>
+        <button class="restart-btn" id="restartButton">⟳ RESTART</button>
+    </div>
+    <div style="text-align:center; margin-top: 10px; color:#9ca3af; font-size:13px; background:#00000066; padding:4px 12px; border-radius:30px;">
+        🎮 ПРОБЕЛ / КЛИК / ТАП — ПРЫЖОК (2 ПРЫЖКА В ВОЗДУХЕ!) &nbsp;|&nbsp; ✨ Монеты &nbsp;|&nbsp; ⚡ Шипы
     </div>
 </div>
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-    (function(){
-        // ------------------- TELEGRAM INTEGRATION -------------------
-        let tg = null;
-        let userName = "Guest";
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                tg.ready();
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    let user = tg.initDataUnsafe.user;
-                    userName = user.first_name || (user.username ? "@"+user.username : "Player");
-                } else {
-                    userName = "DashHero";
-                }
-                // расширяем на весь экран
-                tg.expand();
-                // тактильная поддержка будет использоваться везде
-            } else {
-                console.log("Telegram WebApp not detected");
-            }
-        } catch(e) { console.warn(e); }
-        
-        const tgUserDiv = document.getElementById("tgUserArea");
-        tgUserDiv.innerHTML = `🎮 ${userName} ` + (tg ? "✨" : "🌐");
-        
-        function triggerHaptic(style = "light") {
-            if (tg && tg.HapticFeedback) {
-                try {
-                    if (style === "light") tg.HapticFeedback.impactOccurred("light");
-                    else if (style === "medium") tg.HapticFeedback.impactOccurred("medium");
-                    else if (style === "heavy") tg.HapticFeedback.impactOccurred("heavy");
-                    else if (style === "success") tg.HapticFeedback.notificationOccurred("success");
-                    else if (style === "error") tg.HapticFeedback.notificationOccurred("error");
-                } catch(e) {}
-            } else if (navigator.vibrate) {
-                if(style === "light") navigator.vibrate(10);
-                else if(style === "medium") navigator.vibrate(20);
-                else if(style === "heavy") navigator.vibrate(40);
-            }
-        }
-        
-        // ---------- PERSISTENCE (localStorage) ----------
-        let balance = 0;
-        let purchasedCards = []; // array of card IDs: "double_coins", "double_jump", "shield"
-        
-        const CARD_LIST = [
-            { id: "double_coins", name: "💎 DOUBLE COINS", desc: "Coins give x2 value", price: 70, emoji: "🪙✨" },
-            { id: "double_jump", name: "🌀 DOUBLE JUMP", desc: "Extra air jump", price: 90, emoji: "🦘🦘" },
-            { id: "shield", name: "🛡️ PROTECTOR", desc: "Absorb 1 hit", price: 120, emoji: "🛡️⚡" }
-        ];
-        
-        function saveGameData() {
-            localStorage.setItem("gd_balance", balance.toString());
-            localStorage.setItem("gd_purchased", JSON.stringify(purchasedCards));
-        }
-        
-        function loadGameData() {
-            const savedBalance = localStorage.getItem("gd_balance");
-            if(savedBalance !== null && !isNaN(parseInt(savedBalance))) {
-                balance = parseInt(savedBalance);
-            } else { balance = 180; } // start with some coins to purchase
-            const savedPurchased = localStorage.getItem("gd_purchased");
-            if(savedPurchased) {
-                try {
-                    purchasedCards = JSON.parse(savedPurchased);
-                    if(!Array.isArray(purchasedCards)) purchasedCards = [];
-                } catch(e) { purchasedCards = []; }
-            } else {
-                purchasedCards = [];
-            }
-            updateBalanceUI();
-        }
-        
-        function hasCard(cardId) {
-            return purchasedCards.includes(cardId);
-        }
-        
-        function purchaseCard(cardId, price) {
-            if(hasCard(cardId)) {
-                triggerHaptic("error");
-                return false;
-            }
-            if(balance >= price) {
-                balance -= price;
-                purchasedCards.push(cardId);
-                saveGameData();
-                updateBalanceUI();
-                updateShopUI();
-                // Обновляем игровые эффекты мгновенно (если игра активна)
-                applyCardEffectsToRunningGame();
-                triggerHaptic("success");
-                return true;
-            } else {
-                triggerHaptic("error");
-                return false;
-            }
-        }
-        
-        function updateBalanceUI() {
-            document.getElementById("balanceValue").innerText = balance;
-        }
-        
-        // ------ GLOBALS & GAME ENGINE ------
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        
-        // game dimensions
-        const GROUND_Y = 340;    // ground level (top of ground line)
-        const PLAYER_SIZE = 28;
-        let gameRunning = true;
-        let animFrame = null;
-        
-        // player physics
-        let player = {
-            x: 100,
-            y: GROUND_Y - PLAYER_SIZE,
-            width: PLAYER_SIZE,
-            height: PLAYER_SIZE,
-            velY: 0,
-            isOnGround: true,
-            jumpCount: 0,
-            maxJumps: 1,      // dynamic (card double_jump =2)
-            shieldActive: 0    // remaining shield charges (0 or 1 for simplicity)
-        };
-        
-        // world
-        let obstacles = [];     // { x, width: 20, height: 32 }
-        let coins = [];         // { x, width: 12, height: 12, collected: false }
+    (function () {
+        // ---------- TELEGRAM FULLSCREEN ----------
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        setTimeout(() => {
+            if (tg.requestFullscreen) tg.requestFullscreen().catch(e => console.log);
+        }, 100);
+        window.addEventListener('resize', () => tg.expand());
+
+        // ---------- CANVAS ----------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const CANVAS_W = 1600;
+        const CANVAS_H = 800;
+        canvas.width = CANVAS_W;
+        canvas.height = CANVAS_H;
+
+        // ---------- ИГРОВЫЕ КОНСТАНТЫ ----------
+        const GRAVITY = 0.75;
+        const JUMP_POWER = -11.5;
+        const GROUND_Y = CANVAS_H - 80;
+        const PLAYER_W = 40;
+        const PLAYER_H = 40;
+        const PLAYER_X = 220;
+
+        let worldSpeed = 6.5;
+        let baseSpeed = 6.0;
         let score = 0;
-        let frameCounter = 0;
-        let spawnWait = 0;
-        let coinSpawnWait = 0;
-        
-        // multipliers from cards
-        let coinMultiplier = 1;   // double_coins => 2
-        let doubleJumpEnabled = false;
-        let shieldEnabled = false;
-        
-        function applyCardEffectsToRunningGame() {
-            // apply multipliers & abilities based on purchasedCards
-            coinMultiplier = hasCard("double_coins") ? 2 : 1;
-            doubleJumpEnabled = hasCard("double_jump");
-            player.maxJumps = doubleJumpEnabled ? 2 : 1;
-            shieldEnabled = hasCard("shield");
-            // shield charges : if game is active and shield card owned, we set shieldActive only if it was 0 (or ensure logical)
-            if(shieldEnabled && player.shieldActive === 0) {
-                player.shieldActive = 1;
-            } else if (!shieldEnabled) {
-                player.shieldActive = 0;
-            }
-            // if game is not running, we will apply on restart anyway, but this fixes live purchase.
-            if(!gameRunning) return;
-            // additionally sync jump count if currently on ground : resetting jumpCount
-            if(player.isOnGround) player.jumpCount = 0;
+        let coins = 0;
+        let gameOver = false;
+        let frame = 0;
+
+        // Игрок
+        let player = {
+            x: PLAYER_X,
+            y: GROUND_Y - PLAYER_H,
+            vy: 0,
+            grounded: true,
+            color: "#FFBB44",
+            trail: [],
+            doubleJumpsLeft: 1      // <--- Двойной прыжок: 1 доступен в воздухе
+        };
+
+        // Препятствия и монеты
+        let obstacles = [];
+        let coinsList = [];
+
+        // Эффекты частиц
+        let particles = [];
+
+        // Параллакс-фон
+        let bgOffset = 0;
+
+        // Визуальные эффекты
+        let deathFlash = 0;
+        let screenShake = 0;
+        let trailCounter = 0;
+
+        // Звуки (Web Audio)
+        let audioCtx = null;
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        
-        function resetGameState() {
-            // reset world
-            obstacles = [];
-            coins = [];
+        function playJumpSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 880;
+            gain.gain.value = 0.15;
+            osc.type = 'sine';
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+        function playDoubleJumpSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 1318.52; // выше
+            gain.gain.value = 0.12;
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.25);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+        function playCoinSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 1046.50;
+            gain.gain.value = 0.1;
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+        function playDeathSound() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 220;
+            gain.gain.value = 0.2;
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Частицы
+        function addParticles(x, y, color, count = 8) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + Math.random() * PLAYER_W,
+                    y: y + Math.random() * PLAYER_H,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5 - 2,
+                    life: 0.8,
+                    color: color,
+                    size: 3 + Math.random() * 4
+                });
+            }
+        }
+
+        // Генерация препятствий
+        function generateObstacle() {
+            const type = Math.floor(Math.random() * 3);
+            let w = 28, h = 32;
+            let y = GROUND_Y - h + 6;
+            if (type === 1) {
+                h = 52;
+                y = GROUND_Y - h + 8;
+                w = 24;
+            }
+            return {
+                x: CANVAS_W + 30 + Math.random() * 80,
+                w: w,
+                h: h,
+                y: y,
+                type: type,
+                swing: type === 2 ? 0 : 0
+            };
+        }
+
+        // Генерация монеты
+        function generateCoin() {
+            return {
+                x: CANVAS_W + 100 + Math.random() * 300,
+                y: GROUND_Y - 45 - Math.random() * 70,
+                w: 14,
+                h: 14,
+                collected: false,
+                floatOffset: Math.random() * Math.PI * 2
+            };
+        }
+
+        function restartGame() {
+            gameOver = false;
+            deathFlash = 0;
+            screenShake = 0;
             score = 0;
-            frameCounter = 0;
-            spawnWait = 0;
-            coinSpawnWait = 0;
-            // reset player
-            player.y = GROUND_Y - PLAYER_SIZE;
-            player.velY = 0;
-            player.isOnGround = true;
-            player.jumpCount = 0;
-            // apply card effects again
-            coinMultiplier = hasCard("double_coins") ? 2 : 1;
-            doubleJumpEnabled = hasCard("double_jump");
-            player.maxJumps = doubleJumpEnabled ? 2 : 1;
-            shieldEnabled = hasCard("shield");
-            player.shieldActive = shieldEnabled ? 1 : 0;
-            
-            gameRunning = true;
-            updateScoreUI();
-        }
-        
-        function updateScoreUI() {
-            document.getElementById("scoreValue").innerText = Math.floor(score);
-        }
-        
-        // spawn obstacles (pyramid/block) 
-        function trySpawnObstacle(currentFrame) {
-            if(!gameRunning) return;
-            if(spawnWait <= 0) {
-                // random interval 65~100 frames
-                let nextWait = 60 + Math.floor(Math.random() * 55);
-                spawnWait = nextWait;
-                let obsW = 22;
-                let obsH = 32;
-                obstacles.push({
-                    x: canvas.width,
-                    y: GROUND_Y - obsH,
-                    width: obsW,
-                    height: obsH
-                });
-            } else {
-                spawnWait--;
+            coins = 0;
+            worldSpeed = baseSpeed;
+            obstacles = [];
+            coinsList = [];
+            particles = [];
+            player.y = GROUND_Y - PLAYER_H;
+            player.vy = 0;
+            player.grounded = true;
+            player.doubleJumpsLeft = 1;   // сброс двойного прыжка
+            updateDoubleUI();
+            // начальные препятствия
+            for (let i = 0; i < 4; i++) {
+                let obs = generateObstacle();
+                obs.x = CANVAS_W + 200 + i * 380;
+                obstacles.push(obs);
             }
-        }
-        
-        function trySpawnCoin(currentFrame) {
-            if(!gameRunning) return;
-            if(coinSpawnWait <= 0) {
-                let nextCoin = 35 + Math.floor(Math.random() * 45);
-                coinSpawnWait = nextCoin;
-                coins.push({
-                    x: canvas.width,
-                    y: GROUND_Y - 20 - 6,
-                    width: 12,
-                    height: 12,
-                    collected: false
-                });
-            } else {
-                coinSpawnWait--;
+            // начальные монеты
+            for (let i = 0; i < 6; i++) {
+                let coin = generateCoin();
+                coin.x = CANVAS_W + 150 + i * 280;
+                coinsList.push(coin);
             }
+            document.getElementById('scoreValue').innerText = "0";
+            document.getElementById('coinsValue').innerText = "0";
+            document.getElementById('gameStatusText').innerHTML = "🏃‍♂️ RUNNING";
+            document.getElementById('gameStatusText').style.color = "#0ff";
         }
-        
+
+        function updateDoubleUI() {
+            document.getElementById('doubleValue').innerText = player.doubleJumpsLeft;
+        }
+
         function updateGame() {
-            if(!gameRunning) return;
-            
-            // 1. player physics
-            player.velY += 0.8;   // gravity
-            player.y += player.velY;
-            // ground collision
-            if(player.y + player.height >= GROUND_Y) {
-                player.y = GROUND_Y - player.height;
-                player.velY = 0;
-                player.isOnGround = true;
-                player.jumpCount = 0;
+            if (gameOver) return;
+
+            // Физика
+            player.vy += GRAVITY;
+            player.y += player.vy;
+            let wasGrounded = player.grounded;
+            if (player.y + PLAYER_H >= GROUND_Y) {
+                player.y = GROUND_Y - PLAYER_H;
+                player.vy = 0;
+                player.grounded = true;
+                // При касании земли сбрасываем двойной прыжок
+                if (!wasGrounded) {
+                    player.doubleJumpsLeft = 1;
+                    updateDoubleUI();
+                }
             } else {
-                player.isOnGround = false;
+                player.grounded = false;
             }
-            // ceiling limit
-            if(player.y < 0) {
+            if (player.y < 0) {
                 player.y = 0;
-                if(player.velY < 0) player.velY = 0;
+                if (player.vy < 0) player.vy = 0;
             }
-            
-            // 2. Move obstacles & coins
-            for(let i=0; i<obstacles.length; i++) {
-                obstacles[i].x -= 5.2;
-            }
-            for(let i=0; i<coins.length; i++) {
-                coins[i].x -= 5.2;
-            }
-            obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
-            coins = coins.filter(coin => coin.x + coin.width > 0 && !coin.collected);
-            
-            // 3. collision with obstacles (DEATH or SHIELD)
-            for(let i=0; i<obstacles.length; i++) {
-                const obs = obstacles[i];
-                if(player.x < obs.x+obs.width && player.x+player.width > obs.x &&
-                    player.y < obs.y+obs.height && player.y+player.height > obs.y) {
-                    // collision
-                    if(player.shieldActive > 0) {
-                        // shield blocks hit, consume shield, remove obstacle
-                        player.shieldActive = 0;
-                        obstacles.splice(i,1);
-                        triggerHaptic("medium");
-                        // add visual feedback: we break
-                        i--;
-                        continue;
-                    } else {
-                        gameRunning = false;
-                        triggerHaptic("heavy");
-                        return;
-                    }
+
+            // Движение объектов
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].x -= worldSpeed;
+                if (obstacles[i].type === 2) {
+                    obstacles[i].swing += 0.1;
                 }
             }
-            
-            // 4. coin collection & balance/score
-            for(let i=0; i<coins.length; i++) {
-                const coin = coins[i];
-                if(player.x < coin.x+coin.width && player.x+player.width > coin.x &&
-                    player.y < coin.y+coin.height && player.y+player.height > coin.y && !coin.collected) {
-                    coin.collected = true;
-                    let coinValue = 10 * coinMultiplier;
-                    balance += coinValue;
-                    score += 5;  // +5 score per coin
-                    saveGameData();
-                    updateBalanceUI();
+            for (let i = 0; i < coinsList.length; i++) {
+                coinsList[i].x -= worldSpeed;
+                coinsList[i].floatOffset += 0.05;
+            }
+            obstacles = obstacles.filter(o => o.x + o.w > 0);
+            coinsList = coinsList.filter(c => c.x + c.w > 0 && !c.collected);
+
+            // Генерация новых объектов
+            if (obstacles.length === 0 || obstacles[obstacles.length-1].x < CANVAS_W + 350) {
+                let newObs = generateObstacle();
+                newObs.x = CANVAS_W + 400 + Math.random() * 200;
+                obstacles.push(newObs);
+            }
+            if (coinsList.length < 4 && Math.random() < 0.02) {
+                let newCoin = generateCoin();
+                newCoin.x = CANVAS_W + 200 + Math.random() * 300;
+                coinsList.push(newCoin);
+            }
+
+            // Столкновения с препятствиями
+            const playerRect = { x: player.x, y: player.y, w: PLAYER_W, h: PLAYER_H };
+            for (let obs of obstacles) {
+                const obsRect = { x: obs.x, y: obs.y, w: obs.w, h: obs.h };
+                if (playerRect.x < obsRect.x + obsRect.w &&
+                    playerRect.x + playerRect.w > obsRect.x &&
+                    playerRect.y < obsRect.y + obsRect.h &&
+                    playerRect.y + playerRect.h > obsRect.y) {
+                    gameOver = true;
+                    deathFlash = 1;
+                    screenShake = 12;
+                    addParticles(player.x, player.y, "#ff6666", 20);
+                    playDeathSound();
+                    document.getElementById('gameStatusText').innerHTML = "💀 GAME OVER 💀";
+                    document.getElementById('gameStatusText').style.color = "#ff8888";
+                    break;
+                }
+            }
+
+            // Сбор монет
+            for (let i = 0; i < coinsList.length; i++) {
+                let c = coinsList[i];
+                if (!c.collected &&
+                    playerRect.x < c.x + c.w && playerRect.x + PLAYER_W > c.x &&
+                    playerRect.y < c.y + c.h && playerRect.y + PLAYER_H > c.y) {
+                    c.collected = true;
+                    coins++;
+                    score += 50;
+                    playCoinSound();
+                    addParticles(c.x + c.w/2, c.y + c.h/2, "#FFD966", 6);
+                    document.getElementById('coinsValue').innerText = coins;
                     updateScoreUI();
-                    triggerHaptic("light");
                 }
             }
-            coins = coins.filter(c => !c.collected);
-            
-            // 5. score based on distance (survival)
-            score += 0.35;
-            updateScoreUI();
-            
-            // 6. spawn dynamic obstacles and coins
-            trySpawnObstacle(frameCounter);
-            trySpawnCoin(frameCounter);
-            frameCounter++;
-        }
-        
-        // JUMP logic (double jump support)
-        function attemptJump() {
-            if(!gameRunning) return false;
-            let canJump = false;
-            if(player.isOnGround) {
-                canJump = true;
-                player.jumpCount = 0;
-            } else if (doubleJumpEnabled && player.jumpCount < player.maxJumps) {
-                canJump = true;
+
+            // Очки за дистанцию
+            if (!gameOver) {
+                score += 0.4 + worldSpeed * 0.04;
+                updateScoreUI();
+                if (worldSpeed < 12) {
+                    worldSpeed = baseSpeed + score / 1400;
+                    if (worldSpeed > 12) worldSpeed = 12;
+                }
             }
-            if(canJump) {
-                player.velY = -11;
-                player.isOnGround = false;
-                player.jumpCount++;
-                triggerHaptic("light");
-                return true;
+
+            // trail игрока
+            if (frame % 3 === 0 && player.grounded) {
+                player.trail.unshift({ x: player.x, y: player.y + PLAYER_H - 5, life: 0.6 });
+                if (player.trail.length > 8) player.trail.pop();
             }
-            return false;
+            for (let t of player.trail) t.life -= 0.03;
+            player.trail = player.trail.filter(t => t.life > 0);
         }
-        
-        // DRAW EVERYTHING (Geometry dash vibe)
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // sky gradient
-            const grad = ctx.createLinearGradient(0,0,0,200);
-            grad.addColorStop(0,"#1d2b4b");
-            grad.addColorStop(1,"#101624");
+
+        function updateScoreUI() {
+            document.getElementById('scoreValue').innerText = Math.floor(score);
+        }
+
+        // ------ ОТРИСОВКА ------
+        function drawParallaxBackground() {
+            bgOffset = (bgOffset + 0.5) % CANVAS_W;
+            const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+            grad.addColorStop(0, "#0b1120");
+            grad.addColorStop(0.5, "#1a2a4a");
+            grad.addColorStop(1, "#0f1725");
             ctx.fillStyle = grad;
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-            // ground
-            ctx.fillStyle = "#3a2c1f";
-            ctx.fillRect(0, GROUND_Y-8, canvas.width, 12);
-            ctx.fillStyle = "#cb7b3c";
-            ctx.fillRect(0, GROUND_Y-4, canvas.width, 6);
-            ctx.fillStyle = "#e0a878";
-            for(let i=0; i<12; i++) {
-                ctx.fillRect(i*75, GROUND_Y-12, 35, 8);
-            }
-            // details
-            ctx.fillStyle = "#f3c26b";
-            ctx.shadowBlur = 0;
-            // obstacles
-            for(let obs of obstacles) {
-                ctx.fillStyle = "#e64b2e";
-                ctx.shadowBlur = 4;
-                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                ctx.fillStyle = "#b52e1a";
-                ctx.fillRect(obs.x+4, obs.y-6, obs.width-8, 8);
-                ctx.fillStyle = "#ff8866";
-                ctx.fillRect(obs.x+6, obs.y+8, 5, 12);
-            }
-            // coins
-            for(let coin of coins) {
-                ctx.fillStyle = "#ffcd4a";
-                ctx.shadowBlur = 8;
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+            ctx.fillStyle = "#ffffff20";
+            for (let i = 0; i < 12; i++) {
+                let x = (bgOffset * 0.3 + i * 180) % CANVAS_W;
                 ctx.beginPath();
-                ctx.ellipse(coin.x+6, coin.y+6, 7, 7, 0, 0, Math.PI*2);
+                ctx.ellipse(x, 70 + i * 40, 40, 25, 0, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = "#ffa047";
+            }
+            for (let i = 0; i < 200; i++) {
+                if (i % 3 === 0) continue;
+                let sx = (i * 97) % CANVAS_W;
+                let sy = (i * 131) % (CANVAS_H - 100);
+                ctx.globalAlpha = 0.3 + Math.sin(Date.now() * 0.002 + i) * 0.2;
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(sx, sy, 1.5, 1.5);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawGroundDetail() {
+            ctx.fillStyle = "#2c1a10";
+            ctx.fillRect(0, GROUND_Y - 12, CANVAS_W, 20);
+            ctx.fillStyle = "#5a3a2a";
+            ctx.fillRect(0, GROUND_Y - 6, CANVAS_W, 8);
+            ctx.fillStyle = "#e0a878";
+            ctx.fillRect(0, GROUND_Y - 2, CANVAS_W, 4);
+            for (let i = 0; i < 30; i++) {
+                let x = (frame * 2 + i * 55) % CANVAS_W;
+                ctx.fillStyle = "#c97e3a";
+                ctx.fillRect(x, GROUND_Y - 10, 14, 5);
+                ctx.fillStyle = "#e5a050";
+                ctx.fillRect(x + 3, GROUND_Y - 12, 8, 3);
+            }
+            ctx.fillStyle = "#ffefb0";
+            for (let i = 0; i < 15; i++) {
+                ctx.fillRect((frame * 1.5 + i * 87) % CANVAS_W, GROUND_Y - 4, 4, 2);
+            }
+        }
+
+        function drawPlayerWithTrail() {
+            for (let t of player.trail) {
+                ctx.globalAlpha = t.life * 0.6;
+                ctx.fillStyle = "#FFAA55";
+                ctx.fillRect(t.x, t.y, PLAYER_W, 6);
+            }
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 16;
+            ctx.shadowColor = "#ffbb55";
+            const grad = ctx.createLinearGradient(player.x, player.y, player.x + PLAYER_W, player.y + PLAYER_H);
+            grad.addColorStop(0, player.grounded ? "#FFCC66" : "#FFAA44");
+            grad.addColorStop(1, "#EE9922");
+            ctx.fillStyle = grad;
+            ctx.fillRect(player.x, player.y, PLAYER_W, PLAYER_H);
+            ctx.fillStyle = "#000";
+            ctx.fillRect(player.x + 8, player.y + 10, 6, 6);
+            ctx.fillRect(player.x + 22, player.y + 10, 6, 6);
+            ctx.fillStyle = "white";
+            ctx.fillRect(player.x + 9, player.y + 11, 3, 3);
+            ctx.fillRect(player.x + 23, player.y + 11, 3, 3);
+            ctx.beginPath();
+            ctx.strokeStyle = "#442200";
+            ctx.lineWidth = 2;
+            if (player.grounded) {
+                ctx.arc(player.x + 18, player.y + 24, 10, 0.1, Math.PI - 0.1);
+            } else {
+                ctx.arc(player.x + 18, player.y + 22, 9, 0.05, Math.PI - 0.05);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function drawObstaclesDetailed() {
+            for (let obs of obstacles) {
+                if (obs.type === 0) {
+                    ctx.fillStyle = "#E63946";
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, obs.y + obs.h);
+                    ctx.lineTo(obs.x + obs.w/2, obs.y);
+                    ctx.lineTo(obs.x + obs.w, obs.y + obs.h);
+                    ctx.fill();
+                    ctx.fillStyle = "#B91C1C";
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + 5, obs.y + obs.h - 5);
+                    ctx.lineTo(obs.x + obs.w/2, obs.y + 8);
+                    ctx.lineTo(obs.x + obs.w - 5, obs.y + obs.h - 5);
+                    ctx.fill();
+                } else if (obs.type === 1) {
+                    ctx.fillStyle = "#6B5B4B";
+                    ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                    ctx.fillStyle = "#4A3A2A";
+                    ctx.fillRect(obs.x + 4, obs.y, obs.w-8, obs.h/2);
+                    ctx.fillStyle = "#A57C5C";
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillRect(obs.x + 5 + i*6, obs.y + obs.h-12, 4, 8);
+                    }
+                } else if (obs.type === 2) {
+                    let swingY = Math.sin(obs.swing) * 3;
+                    ctx.fillStyle = "#FF6347";
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, obs.y + obs.h + swingY);
+                    ctx.lineTo(obs.x + obs.w/2, obs.y - 5 + swingY);
+                    ctx.lineTo(obs.x + obs.w, obs.y + obs.h + swingY);
+                    ctx.fill();
+                    ctx.fillStyle = "#CC3300";
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x + 4, obs.y + obs.h - 3 + swingY);
+                    ctx.lineTo(obs.x + obs.w/2, obs.y + 3 + swingY);
+                    ctx.lineTo(obs.x + obs.w - 4, obs.y + obs.h - 3 + swingY);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawCoins() {
+            for (let coin of coinsList) {
+                if (coin.collected) continue;
+                let floatY = Math.sin(coin.floatOffset) * 4;
+                ctx.fillStyle = "#FFD700";
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "#FFAA00";
                 ctx.beginPath();
-                ctx.ellipse(coin.x+6, coin.y+5, 3, 3, 0, 0, Math.PI*2);
+                ctx.ellipse(coin.x + coin.w/2, coin.y + coin.h/2 + floatY, coin.w/2, coin.h/2, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#FFA500";
+                ctx.beginPath();
+                ctx.ellipse(coin.x + coin.w/2, coin.y + coin.h/2 + floatY, coin.w/3, coin.h/3, 0, 0, Math.PI*2);
                 ctx.fill();
                 ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(coin.x+4, coin.y+3, 1.2, 0, Math.PI*2);
-                ctx.fill();
-            }
-            // player (geometry dash cube style)
-            ctx.shadowBlur = 6;
-            ctx.fillStyle = "#3cc7f2";
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(player.x+18, player.y+8, 6, 6);
-            ctx.fillStyle = "#111";
-            ctx.fillRect(player.x+20, player.y+9, 3, 4);
-            ctx.fillStyle = "#ff8c42";
-            ctx.fillRect(player.x+5, player.y+20, 12, 5);
-            if(player.shieldActive > 0) {
-                ctx.beginPath();
-                ctx.arc(player.x+14, player.y+14, 22, 0, Math.PI*2);
-                ctx.fillStyle = "#44ffcc33";
-                ctx.fill();
-                ctx.strokeStyle = "#aaffee";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(player.x+14, player.y+14, 21, 0, Math.PI*2);
-                ctx.stroke();
-            }
-            ctx.shadowBlur = 0;
-            // game over text
-            if(!gameRunning) {
-                ctx.font = "bold 36monospace";
-                ctx.fillStyle = "#ff3366";
+                ctx.fillRect(coin.x + coin.w/2 - 2, coin.y + coin.h/2 - 2 + floatY, 4, 4);
                 ctx.shadowBlur = 0;
-                ctx.fillText("GAME OVER", canvas.width/2-110, 100);
-                ctx.font = "bold 16px monospace";
-                ctx.fillStyle = "#ffeeaa";
-                ctx.fillText("press RESTART", canvas.width/2-70, 160);
             }
         }
-        
-        // game loop
-        function gameLoop() {
-            if(gameRunning) updateGame();
-            draw();
-            animFrame = requestAnimationFrame(gameLoop);
+
+        function drawParticles() {
+            for (let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                p.vy += 0.2;
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            }
+            particles = particles.filter(p => p.life > 0);
+            ctx.globalAlpha = 1;
         }
-        
-        // ---------- SHOP UI ----------
-        function updateShopUI() {
-            const container = document.getElementById("cardsContainer");
-            container.innerHTML = "";
-            for(let card of CARD_LIST) {
-                const owned = hasCard(card.id);
-                const cardDiv = document.createElement("div");
-                cardDiv.className = "card" + (owned ? " owned" : "");
-                cardDiv.innerHTML = `
-                    <h4>${card.emoji} ${card.name}</h4>
-                    <p>${card.desc}</p>
-                    <p style="color:#ffcc55;">💰 ${card.price}</p>
-                    <button data-id="${card.id}" data-price="${card.price}" ${owned ? 'disabled' : ''}>${owned ? "✓ OWNED" : "PURCHASE"}</button>
-                `;
-                if(!owned) {
-                    const btn = cardDiv.querySelector("button");
-                    btn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const id = btn.getAttribute("data-id");
-                        const price = parseInt(btn.getAttribute("data-price"));
-                        const success = purchaseCard(id, price);
-                        if(success) {
-                            triggerHaptic("medium");
-                            updateShopUI();
-                            if(gameRunning) applyCardEffectsToRunningGame();
-                        }
+
+        function drawUIEffects() {
+            let speedPercent = (worldSpeed - baseSpeed) / (12 - baseSpeed);
+            ctx.fillStyle = "#0ff";
+            ctx.fillRect(0, GROUND_Y - 28, CANVAS_W * speedPercent, 6);
+            ctx.fillStyle = "#ffffff30";
+            ctx.fillRect(0, GROUND_Y - 28, CANVAS_W, 1);
+            ctx.font = "bold 24monospace";
+            ctx.fillStyle = "#FFE484";
+            ctx.fillText("x" + coins, CANVAS_W - 80, 60);
+            ctx.font = "20monospace";
+            ctx.fillStyle = "#88ccff";
+            ctx.fillText("⚡ " + worldSpeed.toFixed(1), CANVAS_W - 120, 110);
+            // индикатор двойного прыжка на экране
+            ctx.font = "bold 18monospace";
+            ctx.fillStyle = player.doubleJumpsLeft > 0 ? "#FFD966" : "#666";
+            ctx.fillText("DOUBLE JUMP: " + player.doubleJumpsLeft, CANVAS_W - 180, 160);
+        }
+
+        function drawGameOverlay() {
+            if (gameOver) {
+                ctx.font = "800 48monospace";
+                ctx.fillStyle = "#ff3333cc";
+                ctx.fillText("GAME OVER", CANVAS_W/2 - 150, CANVAS_H/2 - 60);
+                ctx.font = "24monospace";
+                ctx.fillStyle = "#ffdd88";
+                ctx.fillText("click RESTART", CANVAS_W/2 - 90, CANVAS_H/2 + 30);
+            }
+            if (deathFlash > 0) {
+                ctx.fillStyle = `rgba(255, 80, 80, ${deathFlash * 0.6})`;
+                ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                deathFlash -= 0.03;
+            }
+            if (screenShake > 0) {
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+                screenShake -= 0.8;
+            }
+        }
+
+        function render() {
+            drawParallaxBackground();
+            drawGroundDetail();
+            drawCoins();
+            drawObstaclesDetailed();
+            drawPlayerWithTrail();
+            drawParticles();
+            drawUIEffects();
+            drawGameOverlay();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        // ---------- УПРАВЛЕНИЕ С ДВОЙНЫМ ПРЫЖКОМ ----------
+        function jump() {
+            if (gameOver) return;
+            if (player.grounded) {
+                // обычный прыжок с земли
+                player.vy = JUMP_POWER;
+                player.grounded = false;
+                player.doubleJumpsLeft = 1;   // после прыжка с земли сбрасываем, но фактически он остаётся 1
+                updateDoubleUI();
+                addParticles(player.x, player.y + PLAYER_H-5, "#FFAA66", 12);
+                playJumpSound();
+            } 
+            else if (player.doubleJumpsLeft > 0) {
+                // второй прыжок в воздухе
+                player.vy = JUMP_POWER;
+                player.doubleJumpsLeft--;
+                updateDoubleUI();
+                addParticles(player.x, player.y + PLAYER_H-5, "#FFD700", 16);
+                playDoubleJumpSound();
+                // небольшой визуальный всплеск
+                for (let i = 0; i < 5; i++) {
+                    particles.push({
+                        x: player.x + PLAYER_W/2,
+                        y: player.y + PLAYER_H/2,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: -Math.random() * 5,
+                        life: 0.6,
+                        color: "#FFAA33",
+                        size: 4
                     });
                 }
-                container.appendChild(cardDiv);
             }
         }
-        
-        // restart handler
-        function restartGame() {
-            resetGameState();
-            // re-apply shields after reset (already called reset)
-            applyCardEffectsToRunningGame();
-            updateScoreUI();
-            triggerHaptic("medium");
-        }
-        
-        // event binding for jump (space, click/tap on canvas)
-        function bindControls() {
-            const jumpHandler = (e) => {
-                if(e.type === "keydown") {
-                    if(e.code === "Space" || e.code === "ArrowUp") {
-                        e.preventDefault();
-                        attemptJump();
-                    }
-                } else {
+
+        function handleJump(e) {
+            if (e.type === 'keydown') {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
                     e.preventDefault();
-                    attemptJump();
+                    jump();
                 }
-            };
-            window.addEventListener("keydown", jumpHandler);
-            canvas.addEventListener("click", (e) => {
+            } else {
                 e.preventDefault();
-                attemptJump();
-            });
-            canvas.addEventListener("touchstart", (e) => {
-                e.preventDefault();
-                attemptJump();
-            });
-            document.getElementById("restartButton").addEventListener("click", () => {
-                restartGame();
-            });
+                jump();
+            }
         }
-        
-        // initialize everything
-        function init() {
-            loadGameData();
-            updateShopUI();
-            resetGameState();    // sets starting world + shield/doublejump based on purchased cards
-            applyCardEffectsToRunningGame();
-            updateBalanceUI();
-            bindControls();
-            gameLoop();
+
+        window.addEventListener('keydown', handleJump);
+        canvas.addEventListener('click', (e) => { e.preventDefault(); jump(); });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+        document.getElementById('restartButton').addEventListener('click', () => restartGame());
+
+        // Цикл игры
+        function gameLoop() {
+            if (!gameOver) updateGame();
+            render();
+            frame++;
+            requestAnimationFrame(gameLoop);
         }
-        
-        init();
+
+        restartGame();
+        gameLoop();
+        document.body.addEventListener('touchstart', () => { if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); });
+        document.body.addEventListener('click', () => { if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); });
     })();
 </script>
 </body>
